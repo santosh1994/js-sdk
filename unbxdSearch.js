@@ -1063,9 +1063,9 @@ var unbxdSearchInit = function(jQuery, Handlebars){
 	     && this.defaultParams.ranges.hasOwnProperty(x)
 	     && this.defaultParams.ranges[x].hasOwnProperty(y)
 	     && this.params.ranges[x].hasOwnProperty(y)){
-	    b.push(x + ':[' + this.params.ranges[x][y].lb + " TO " + this.params.ranges[x][y].ub + ']');
+	    b.push(x + ':[' + this.params.ranges[x][y].lb + " TO " + this.params.ranges[x][y].ub + '}');
 	  }else if(this.params.ranges[x].hasOwnProperty(y)){
-	    a.push(x + ':[' + this.params.ranges[x][y].lb + " TO " + this.params.ranges[x][y].ub + ']');
+	    a.push(x + ':[' + this.params.ranges[x][y].lb + " TO " + this.params.ranges[x][y].ub + '}');
 	  }
 	}
 
@@ -1161,8 +1161,9 @@ var unbxdSearchInit = function(jQuery, Handlebars){
 	modifiedCB(data);
       }
       ,urlobj = self.url()
-      ,requestHeaders = jQuery.extend({}, this.getDefaultRequestHeaders(), this.options.requestHeaders);
-      
+      ,requestHeaders = this.serializeRequestHeaders(jQuery.extend({}
+        ,this.getDefaultRequestHeaders(), this.options.requestHeaders));
+
       if(doPush){
 	var finalquery = this.options.noEncoding ? urlobj.query : this.encode( urlobj.query );
 	if(this.isHistory){
@@ -1181,13 +1182,14 @@ var unbxdSearchInit = function(jQuery, Handlebars){
 	  this.currentHash = finalquery;
 	}
       }
-
+      if(requestHeaders){
+        urlobj.url += '&' + requestHeaders
+      }
       this.ajaxCall = jQuery.ajax({
 	url: urlobj.url.replace(this.options.searchQueryParam+"=", "q=")
 	,dataType: "jsonp"
 	,jsonp: 'json.wrf'
 	,success: cb.bind(self)
-	,headers: requestHeaders
       });
     }
     ,reset: function(){
@@ -1263,7 +1265,7 @@ var unbxdSearchInit = function(jQuery, Handlebars){
 	  for(var x = 0; x < filterStrArr.length; x++){
 	    var arr = filterStrArr[x].split(":");
 	    if(arr.length == 2){
-	      arr[1] = arr[1].replace(/\"{2,}/g, '"').replace(/(^")|("$)/g, '').replace(/(^\[)|(\]$)/g, '');
+	      arr[1] = arr[1].replace(/(^")|("$)/g, '').replace(/\"{2,}/g, '"').replace(/\\\"/g, '"').replace(/(^\[)|(\]$)|(\}$)/g, '');
 
 	      var vals = arr[1].split(" TO ");
 	      if(vals.length > 1){
@@ -1953,15 +1955,28 @@ var unbxdSearchInit = function(jQuery, Handlebars){
       var self = this,
       userId = this.getUserId(),
       defaultRequestHeaders = {
-        "Device-Type": self.getDeviceInfo()
-        ,"Unbxd-Url": document.URL
-        ,"Unbxd-Referrer": document.referrer
-        ,"User-Type": self.getUserType()
+        "device-type": self.getDeviceInfo()
+        ,"unbxd-url": document.URL
+        ,"unbxd-referrer": document.referrer
+        ,"user-type": self.getUserType()
+        ,"api-key": self.options.APIKey
       };
       if(userId){
-        defaultRequestHeaders["User-Id"] = userId;
+        defaultRequestHeaders["uid"] = userId;
       }
       return defaultRequestHeaders;
+    }
+    ,serializeRequestHeaders : function(headers){
+      if(jQuery.param){
+        return jQuery.param(headers)
+      } else {
+        var str = [];
+        for(var header in headers)
+          if (headers.hasOwnProperty(header)) {
+            str.push(encodeURIComponent(header) + "=" + encodeURIComponent(headers[header]));
+          }
+        return str.join("&");
+      }
     }
   });
 };
