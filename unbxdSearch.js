@@ -1938,11 +1938,11 @@ var unbxdSearchInit = function(jQuery, Handlebars){
       var smallDeviceMaxWidth = 768,
       mediumDeviceMaxWidth = 992;
       if(window.outerWidth < smallDeviceMaxWidth){
-        return "Mobile";
+        return "mobile";
       } else if(window.outerWidth < mediumDeviceMaxWidth){
-        return "Tablet";
+        return "tablet";
       } else {
-        return "Desktop";
+        return "desktop";
       }
     }
     ,getUserType : function(){
