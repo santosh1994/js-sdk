@@ -1955,7 +1955,7 @@ var unbxdSearchInit = function(jQuery, Handlebars){
       var self = this,
       userId = this.getUserId(),
       defaultRequestHeaders = {
-        "device-type": self.getDeviceInfo()
+        "deviceType": self.getDeviceInfo()
         ,"unbxd-url": document.URL
         ,"unbxd-referrer": document.referrer
         ,"user-type": self.getUserType()
